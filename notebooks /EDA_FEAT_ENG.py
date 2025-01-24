@@ -1,6 +1,9 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 # Load dataset
 df = pd.read_csv('transactions.csv')
@@ -45,21 +48,16 @@ plt.show()
 # Check for missing values
 df.isnull().sum()
 
-
 # Box plot to detect outliers
 sns.boxplot(x=df['Amount'])
 plt.title('Boxplot of Transaction Amount')
 plt.show()
-
-
-
 
 # Create aggregate features for each customer
 df['Total_Transaction_Amount'] = df.groupby('AccountId')['Amount'].transform('sum')
 df['Average_Transaction_Amount'] = df.groupby('AccountId')['Amount'].transform('mean')
 df['Transaction_Count'] = df.groupby('AccountId')['TransactionId'].transform('count')
 df['Transaction_Amount_Std'] = df.groupby('AccountId')['Amount'].transform('std')
-
 
 # Convert TransactionStartTime to datetime
 df['TransactionStartTime'] = pd.to_datetime(df['TransactionStartTime'])
@@ -74,7 +72,6 @@ df['Transaction_Year'] = df['TransactionStartTime'].dt.year
 df = pd.get_dummies(df, columns=['ProductCategory'], drop_first=True)
 
 # Label Encoding for ChannelId
-from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
 df['ChannelId_encoded'] = le.fit_transform(df['ChannelId'])
 
@@ -84,14 +81,11 @@ df.fillna(df.median(), inplace=True)
 # For categorical variables, use mode or create a new "Missing" category
 df['ProductCategory'].fillna(df['ProductCategory'].mode()[0], inplace=True)
 
-from sklearn.preprocessing import StandardScaler
-
 # Standardize the numerical columns
 scaler = StandardScaler()
 df['Amount_scaled'] = scaler.fit_transform(df[['Amount']])
 
 # Normalize the numerical columns
-from sklearn.preprocessing import MinMaxScaler
 scaler = MinMaxScaler()
 df['Amount_normalized'] = scaler.fit_transform(df[['Amount']])
 
