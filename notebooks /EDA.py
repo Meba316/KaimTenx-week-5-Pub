@@ -50,3 +50,48 @@ df.isnull().sum()
 sns.boxplot(x=df['Amount'])
 plt.title('Boxplot of Transaction Amount')
 plt.show()
+
+
+
+
+# Create aggregate features for each customer
+df['Total_Transaction_Amount'] = df.groupby('AccountId')['Amount'].transform('sum')
+df['Average_Transaction_Amount'] = df.groupby('AccountId')['Amount'].transform('mean')
+df['Transaction_Count'] = df.groupby('AccountId')['TransactionId'].transform('count')
+df['Transaction_Amount_Std'] = df.groupby('AccountId')['Amount'].transform('std')
+
+
+# Convert TransactionStartTime to datetime
+df['TransactionStartTime'] = pd.to_datetime(df['TransactionStartTime'])
+
+# Extract date-time features
+df['Transaction_Hour'] = df['TransactionStartTime'].dt.hour
+df['Transaction_Day'] = df['TransactionStartTime'].dt.day
+df['Transaction_Month'] = df['TransactionStartTime'].dt.month
+df['Transaction_Year'] = df['TransactionStartTime'].dt.year
+
+# One-Hot Encoding for ProductCategory
+df = pd.get_dummies(df, columns=['ProductCategory'], drop_first=True)
+
+# Label Encoding for ChannelId
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+df['ChannelId_encoded'] = le.fit_transform(df['ChannelId'])
+
+# Impute missing values for numerical features with the median
+df.fillna(df.median(), inplace=True)
+
+# For categorical variables, use mode or create a new "Missing" category
+df['ProductCategory'].fillna(df['ProductCategory'].mode()[0], inplace=True)
+
+from sklearn.preprocessing import StandardScaler
+
+# Standardize the numerical columns
+scaler = StandardScaler()
+df['Amount_scaled'] = scaler.fit_transform(df[['Amount']])
+
+# Normalize the numerical columns
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+df['Amount_normalized'] = scaler.fit_transform(df[['Amount']])
+
